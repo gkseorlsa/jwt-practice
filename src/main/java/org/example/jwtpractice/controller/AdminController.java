@@ -1,4 +1,4 @@
-package org.example.jwtpractice.config;
+package org.example.jwtpractice.controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -10,19 +10,23 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtProvider {
 
     private final SecretKey key;
     private final long accessTokenValidityMs;
+    private final long refreshTokenValidityMs;
 
     public JwtProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-token-validity.ms}") long accessTokenValidityMs
+            @Value("${jwt.access-token-validity.ms}") long accessTokenValidityMs,
+            @Value("${jwt.refresh-token-validity.ms}") long refreshTokenValidityMs
     ) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.accessTokenValidityMs = accessTokenValidityMs;
+        this.refreshTokenValidityMs = refreshTokenValidityMs;
     }
 
     public String createAccessToken(String username, String role) {
@@ -35,10 +39,26 @@ public class JwtProvider {
         return Jwts.builder()
                 .subject(username)
                 .claim("role", role)
+                .claim("type", "access")
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessTokenValidityMs))
                 .signWith(key)
-                .compact();
+                .compact()
+                ;
+    }
+
+    public String createRefreshToken(String username) {
+        Date now = new Date();
+
+        return Jwts.builder()
+                .subject(username)
+                .claim("type", "refresh")
+                .id(UUID.randomUUID().toString())       // 매번 다른 토큰이 되도록
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + refreshTokenValidityMs))
+                .signWith(key)
+                .compact()
+                ;
     }
 
     // parseSignedClaims는 서명이 틀리거나 만료됐으면 예외를 던지게 한다.
@@ -58,6 +78,14 @@ public class JwtProvider {
             parseClaims(token);
             return true;
 
+        } catch(JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public boolean validateRefreshToken(String token) {
+        try {
+            return "refresh".equals(parseClaims(token).get("type", String.class));
         } catch(JwtException | IllegalArgumentException e) {
             return false;
         }

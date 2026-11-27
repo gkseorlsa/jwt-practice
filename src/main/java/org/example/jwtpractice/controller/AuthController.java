@@ -1,6 +1,7 @@
 package org.example.jwtpractice.controller;
 
 import org.example.jwtpractice.dto.LoginRequest;
+import org.example.jwtpractice.dto.RefreshRequest;
 import org.example.jwtpractice.dto.SignupRequest;
 import org.example.jwtpractice.dto.TokenResponse;
 import org.example.jwtpractice.service.AuthService;
@@ -30,5 +31,16 @@ public class AuthController {
     @PostMapping("/login")
     public TokenResponse login(@RequestBody LoginRequest req) {
         return authService.login(req);
+    }
+
+    @PostMapping("/refresh")
+    public TokenResponse refresh(@RequestBody RefreshRequest req) {
+        return authService.refresh(req);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody RefreshRequest req) {
+        authService.logout(req);
+        return ResponseEntity.noContent().build();
     }
 }

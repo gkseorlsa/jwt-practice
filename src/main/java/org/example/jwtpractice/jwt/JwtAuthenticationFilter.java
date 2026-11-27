@@ -38,22 +38,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && jwtProvider.validate(token)) {
             Claims claims = jwtProvider.parseClaims(token);
 
-            String username = claims.getSubject();
-            String role = claims.get("role", String.class);
+            if ("access".equals(claims.get("type", String.class))) {
+                String username = claims.getSubject();
+                String role = claims.get("role", String.class);
 
-            // UsernamePasswordAuthenticationToken: 세 번째 인자가 인가에서 사용된다.
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            username,
-                            null,
-                            List.of(new SimpleGrantedAuthority(role))
-                    );
+                // UsernamePasswordAuthenticationToken: 세 번째 인자가 인가에서 사용된다.
 
-            // SecurityContext: 지금 처리 중인 요청의 주인이 누구인지 적어두는 메모장이다.
-            //      필터가 토큰을 확인한 뒤, 거기에 메모를 한다. 그러면 Spring Security 로직이 그걸 읽을 수 있다.
-            //      요청이 끝나면 메모는 지워진다.
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                username,
+                                null,
+                                List.of(new SimpleGrantedAuthority(role))
+                        );
+
+                // SecurityContext: 지금 처리 중인 요청의 주인이 누구인지 적어두는 메모장이다.
+                //      필터가 토큰을 확인한 뒤, 거기에 메모를 한다. 그러면 Spring Security 로직이 그걸 읽을 수 있다.
+                //      요청이 끝나면 메모는 지워진다.
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
 
         filterChain.doFilter(req, res);

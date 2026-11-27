@@ -5,4 +5,7 @@ spring:
 jwt:
   secret: ${JWT_SECRET:kwA7ULxl5DWAnVkHb8WfXAKghm8PqwrriwAkyn7oN6g=}
   access-token-validity:
-    ms: 1800000   # 30분
+#    ms: 1800000     # 30분
+    ms: 60000       # 1분
+  refresh-token-validity:
+    ms: 1209600000  # 14일
